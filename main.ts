@@ -27,11 +27,16 @@ app(
 
 const decoder = new TextDecoder("utf-8");
 
-const data = await Deno.readFile("hello.txt");
+const data = await Deno.readFile("users.csv");
 console.log(decoder.decode(data));
 
+const dataString = decoder.decode(data);
+
 // const string = "a,b,c\nd,e,f";
-const aa = await parse("users.csv", {
+const aa = await parse(dataString, {
   header: false,
+  comma: ";",
 });
-console.log(aa);
+
+aa.forEach((row) => console.log("ROW: -> ", row));
+// console.log(aa);
