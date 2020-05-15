@@ -1,15 +1,26 @@
-import { app, get } from "https://denopkg.com/syumai/dinatra/mod.ts";
-import { parse } from "https://deno.land/std/encoding/csv.ts";
+import { app, get, post } from "https://denopkg.com/syumai/dinatra/mod.ts";
+import getTable from "./getTable.ts";
 
 //////// TEST HTTP CALLS ///////////////
 const greeting = "Hello there!";
 
-interface Props {
+interface ReadProps {
   params: { id?: string };
 }
 
-const greet = ({ params }: Props): string =>
+interface WriteProps {
+  params: { tableName?: string };
+}
+
+const greet = ({ params }: ReadProps): string =>
   greeting + `\nand hello to ${params.id}`;
+
+const write = async ({ params }: WriteProps): Promise<string> => {
+  if (params.tableName === undefined) return "NO TABLE FOUND";
+  const string = await getTable(params.tableName);
+  console.log("STRING:", string);
+  return `POSTED --> ${params.tableName}`;
+};
 
 const readCsv = (): string => {
   console.log("CONSOLE STUFF HERE");
@@ -21,22 +32,20 @@ app(
   get("/hello", (): string => greeting),
   get("/hello/:id", greet),
   get("/", readCsv),
+  post("/:tableName", write),
+  //   ,
+  // ),
 );
 
 //////// TEST CSV READER ///////////////
 
 const decoder = new TextDecoder("utf-8");
+const dataString = decoder.decode(await Deno.readFile("users.csv"));
 
-const data = await Deno.readFile("users.csv");
-console.log(decoder.decode(data));
+// const aa = await parse(dataString, {
+//   header: false,
+//   comma: ";",
+// });
 
-const dataString = decoder.decode(data);
-
-// const string = "a,b,c\nd,e,f";
-const aa = await parse(dataString, {
-  header: false,
-  comma: ";",
-});
-
-aa.forEach((row) => console.log("ROW: -> ", row));
+// aa.forEach((row) => console.log("ROW: -> ", row));
 // console.log(aa);
